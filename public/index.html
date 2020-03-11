@@ -1,0 +1,91 @@
+<html>
+
+<head>
+  <title>Express</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <script src="http://code.jquery.com/jquery-1.5.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+  <h1>Recipes Generator</h1>
+  <p>Made with love by Soraya <3</p>
+  <div id="categories">
+    <label>Category</label>
+    <select name="category" id="category-select" class="select"></select>
+  </div>
+  <div id="areas">
+    <label>Area</label>
+    <select name="area" id="area-select" class="select"></select>
+  </div>
+  <div id="ingredients">
+    <label>Ingredient</label>
+    <select name="ingredient" id="ingredient-select" class="select"></select>
+  </div>
+  <button name="search" id="search-btn">Search</button>
+  <div id="results">
+    <label>Results</label>
+    <ul id="result-list"></ul>
+  </div>
+</body>
+
+<script>
+  const socket = io();
+  const categorySelect = document.getElementById("category-select");
+  const areaSelect = document.getElementById("area-select");
+  const ingredientSelect = document.getElementById("ingredient-select");
+  const resultList = document.getElementById("result-list");
+
+  fetch(`recipes/categories`)
+          .then(response => response.json())
+          .then(recipes => recipes.forEach(r => {
+            let opt = document.createElement("option");
+            opt.value = r;
+            opt.text = r;
+            categorySelect.appendChild(opt);
+            if (categorySelect.value == null) {
+              categorySelect.value = r;
+            }
+          }));
+  fetch(`recipes/areas`)
+          .then(response => response.json())
+          .then(recipes => recipes.forEach(r => {
+            let opt = document.createElement("option");
+            opt.value = r;
+            opt.text = r;
+            areaSelect.appendChild(opt);
+            if (areaSelect.value == null) {
+              areaSelect.value = r;
+            }
+          }));
+  fetch(`recipes/ingredients`)
+          .then(response => response.json())
+          .then(recipes => recipes.forEach(r => {
+            let opt = document.createElement("option");
+            opt.value = r;
+            opt.text = r;
+            ingredientSelect.appendChild(opt);
+            if (ingredientSelect.value == null) {
+              ingredientSelect.value = r;
+            }
+          }));
+  document.getElementById('search-btn').onclick = (async () => {
+      const rawResponse = await fetch('recipes/search', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({category: categorySelect.value, area: areaSelect.value, ingredient: ingredientSelect.value})
+      });
+      resultList.innerHTML = "";
+      const meals = await rawResponse.json();
+      meals.forEach(m => {
+        let li = document.createElement("li");
+        li.appendChild(document.createTextNode(m));
+        resultList.appendChild(li);
+      })
+    });
+
+</script>
+</html>
