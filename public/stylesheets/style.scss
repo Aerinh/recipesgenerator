@@ -1,8 +1,110 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700');
+
+$base-spacing-unit: 24px;
+$half-spacing-unit: $base-spacing-unit / 2;
+
+$color-alpha: #1772FF;
+$color-form-highlight: #EEEEEE;
+
+$color-bg: #00B7FF;
+
+
+table {
+  border: 1px solid #ccc!important;
+  padding: 0.01em 16px;
+  border-radius: 16px;
+  box-sizing: inherit;
+
+  overflow-y:scroll;
+  max-height:50em;
+  display:block;
+}
+
+tr:hover {
+  background-color: $color-bg;
+}
+
+th:hover {
+  background-color: $color-bg;
+}
+
+table > tr {
+  text-align: left;
+}
+
+th {
+  text-align: left;
+}
+
+table.fixed td {
+  overflow: hidden;
+}
+
+button {
+  border: 1px solid #ccc !important;
+  padding: 1em 16px;
+  border-radius: 16px;
+  box-sizing: inherit;
+  margin-top: 1em;
+}
+
+select {
+  border: 1px solid #ccc!important;
+  padding: 0.01em 16px;
+  border-radius: 16px;
+  box-sizing: inherit;
+}
+
+th {
+  padding:($half-spacing-unit * 1.5) 0;
+}
+
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font: 14px 'Source Sans Pro', Helvetica, Arial, sans-serif;
+  margin:0;
 }
 
 a {
-  color: #00B7FF;
+  color: $color-bg;
 }
+
+img {
+  max-width: 10em;
+}
+
+/* Split the screen in half */
+.split {
+  max-height: 100%;
+  width: 50%;
+  position: absolute;
+  z-index: 1;
+  overflow-x: visible;
+}
+
+/* Control the left side */
+.left {
+  left: 0;
+}
+
+/* Control the right side */
+.right {
+  right: 0;
+}
+
+.splitContent {
+  margin: 20px;
+}
+
+.recipeField {
+
+}
+
+.searchField {
+  margin: 10px;
+  display: inline-grid;
+}
+
+.recipeField p {
+  margin: 10px;
+}
+

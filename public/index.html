@@ -1,32 +1,79 @@
 <html>
 
 <head>
-  <title>Express</title>
+  <title>Recipes Generator</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
   <script src="http://code.jquery.com/jquery-1.5.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
 </head>
 
 <body>
-  <h1>Recipes Generator</h1>
-  <p>Made with love by Soraya <3</p>
-  <div id="categories">
-    <label>Category</label>
-    <select name="category" id="category-select" class="select"></select>
+  <div class="split left">
+    <div class="splitContent">
+      <h1>Recipes Generator</h1>
+      <p>Made with love by Soraya <3</p>
+      <div id="categories" class="searchField">
+        <label>Category</label>
+        <select name="category" id="category-select" class="select"></select>
+        <button name="search-category" id="search-category-btn">Search by category</button>
+      </div>
+      <div id="areas" class="searchField">
+        <label>Area</label>
+        <select name="area" id="area-select" class="select"></select>
+        <button name="search-area" id="search-area-btn">Search by area</button>
+      </div>
+      <div id="ingredients" class="searchField">
+        <label>Ingredient</label>
+        <select name="ingredient" id="ingredient-select" class="select"></select>
+        <button name="search-ingredient" id="search-ingredient-btn">Search by ingredient</button>
+      </div>
+      <div>
+        <h3>Results</h3>
+      </div>
+      <div>
+        <table id="result-table">
+        </table>
+      </div>
+    </div>
   </div>
-  <div id="areas">
-    <label>Area</label>
-    <select name="area" id="area-select" class="select"></select>
+
+  <div class="split right">
+    <div class="splitContent">
+      <h1>Selected recipe</h1>
+      <div class="recipeField">
+        <h2 id="selected-recipe-name"></h2>
+      </div>
+      <div class="recipeField">
+        <h4>Category</h4>
+        <p id="selected-recipe-category"></p>
+      </div>
+      <div class="recipeField">
+        <h4>Area</h4>
+        <p id="selected-recipe-area"></p>
+      </div>
+      <div class="recipeField">
+        <h4>Instructions</h4>
+        <p id="selected-recipe-instructions"></p>
+      </div>
+      <div class="recipeField">
+        <h4>Image</h4>
+        <img id="selected-recipe-image"/>
+      </div>
+      <div class="recipeField">
+        <h4>Tags</h4>
+        <p id="selected-recipe-tags"></p>
+      </div>
+      <div class="recipeField">
+        <h4>Youtube</h4>
+        <iframe width="420" height="315" id="selected-recipe-youtube"></iframe>
+      </div>
+      <div class="recipeField">
+        <h4>Ingredients</h4>
+        <p id="selected-recipe-ingredients"></p>
+      </div>
+    </div>
   </div>
-  <div id="ingredients">
-    <label>Ingredient</label>
-    <select name="ingredient" id="ingredient-select" class="select"></select>
-  </div>
-  <button name="search" id="search-btn">Search</button>
-  <div id="results">
-    <label>Results</label>
-    <ul id="result-list"></ul>
-  </div>
+
 </body>
 
 <script>
@@ -34,7 +81,80 @@
   const categorySelect = document.getElementById("category-select");
   const areaSelect = document.getElementById("area-select");
   const ingredientSelect = document.getElementById("ingredient-select");
-  const resultList = document.getElementById("result-list");
+  const resultTable = document.getElementById("result-table");
+  const selectedRecipeName = document.getElementById("selected-recipe-name");
+  const selectedRecipeCategory = document.getElementById("selected-recipe-category");
+  const selectedRecipeArea = document.getElementById("selected-recipe-area");
+  const selectedRecipeInstructions = document.getElementById("selected-recipe-instructions");
+  const selectedRecipeImage = document.getElementById("selected-recipe-image");
+  const selectedRecipeTags = document.getElementById("selected-recipe-tags");
+  const selectedRecipeYoutube = document.getElementById("selected-recipe-youtube");
+  const selectedRecipeIngredients = document.getElementById("selected-recipe-ingredients");
+
+  async function onRecipeResultClick(e) {
+    const id = getMealIdFromResultClickEvent(e);
+    const meal = await getMealDetailsById(id);
+    console.log(meal);
+    setSelectedRecipe(meal);
+  }
+
+  function setSelectedRecipe(recipe) {
+    selectedRecipeName.textContent = recipe.name;
+    selectedRecipeCategory.textContent = recipe.category;
+    selectedRecipeArea.textContent = recipe.area;
+    selectedRecipeInstructions.textContent = recipe.instructions;
+    selectedRecipeImage.src = recipe.image;
+    selectedRecipeTags.textContent = recipe.tags;
+    selectedRecipeYoutube.src = recipe.youtube.replace("watch?v=", "embed/");
+    selectedRecipeIngredients.textContent = recipe.ingredients.map(function(ingredient, index) {
+      return ingredient + ' (' + recipe.measures[index] + ')';
+    }).join(", ")
+  }
+
+  function setResultTableLabel() {
+    resultTable.innerHTML =
+            "<tr>" +
+            "  <th>Picture</th>" +
+            "  <th>Name</th>" +
+            "  <th>Id</th>" +
+            "</tr>"
+  }
+
+  function appendResultToTable(meal) {
+    let tr = document.createElement("tr");
+    let imageTd = document.createElement("td")
+    let nameTd = document.createElement("td");
+    let idTd = document.createElement("td")
+    let img = document.createElement("img");
+    img.src = meal.image;
+    imageTd.appendChild(img);
+    nameTd.appendChild(document.createTextNode(meal.name));
+    idTd.appendChild(document.createTextNode(meal.id));
+    tr.appendChild(imageTd);
+    tr.appendChild(nameTd);
+    tr.appendChild(idTd);
+
+    tr.onclick = onRecipeResultClick
+    resultTable.appendChild(tr);
+  }
+
+  function getMealIdFromResultClickEvent(e) {
+    return e.target.parentNode.lastElementChild.textContent
+  }
+
+  async function getMealDetailsById(id) {
+     const rawResponse = await fetch('recipes/search/id', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({id: id})
+    });
+    return await rawResponse.json();
+  }
+
+  setResultTableLabel();
 
   fetch(`recipes/categories`)
           .then(response => response.json())
@@ -69,23 +189,51 @@
               ingredientSelect.value = r;
             }
           }));
-  document.getElementById('search-btn').onclick = (async () => {
-      const rawResponse = await fetch('recipes/search', {
+  document.getElementById('search-category-btn').onclick = (async () => {
+      const rawResponse = await fetch('recipes/search/category', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({category: categorySelect.value, area: areaSelect.value, ingredient: ingredientSelect.value})
+        body: JSON.stringify({category: categorySelect.value})
       });
-      resultList.innerHTML = "";
+      setResultTableLabel();
       const meals = await rawResponse.json();
       meals.forEach(m => {
-        let li = document.createElement("li");
-        li.appendChild(document.createTextNode(m));
-        resultList.appendChild(li);
+        appendResultToTable(m);
       })
     });
+  document.getElementById('search-area-btn').onclick = (async () => {
+    const rawResponse = await fetch('recipes/search/area', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({area: areaSelect.value})
+    });
+    setResultTableLabel();
+    const meals = await rawResponse.json();
+    meals.forEach(m => {
+      appendResultToTable(m);
+    })
+  });
+  document.getElementById('search-ingredient-btn').onclick = (async () => {
+    const rawResponse = await fetch('recipes/search/ingredient', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ingredient: ingredientSelect.value})
+    });
+    setResultTableLabel();
+    const meals = await rawResponse.json();
+    meals.forEach(m => {
+      appendResultToTable(m);
+    })
+  });
 
 </script>
 </html>
